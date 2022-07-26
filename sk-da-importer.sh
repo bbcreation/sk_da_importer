@@ -30,7 +30,7 @@ d=domains
 #
 # Only for gen_password but I dont like it, a lot of lt
 # maybe will use it for orther functions :)
-source /usr/local/vesta/func/main.sh 
+source /usr/local/hestia/func/main.sh 
 sk_file=$1
 sk_tmp=sk_tmp
 sk_delete_tmp () {
@@ -83,7 +83,7 @@ if [ -z $sk_da_usermail ];then
 	sk_da_usermail=$(grep domain backup/user.conf |cut -d "=" -f 2 |head -n 1)
 fi
 
-if /usr/local/vesta/bin/v-list-users | grep -q -w $sk_da_user ;then
+if /usr/local/hestia/bin/v-list-users | grep -q -w $sk_da_user ;then
 	echo "User alredy exist on your server, maybe on vestacp or in your /etc/passwd"
 	echo "**"
 	echo "Grep your /etc/passwd"
@@ -94,7 +94,7 @@ if /usr/local/vesta/bin/v-list-users | grep -q -w $sk_da_user ;then
 else
 	echo "Generate random password for $sk_da_user and create Vestacp Account ..."
 	sk_password=$(generate_password)
-	/usr/local/vesta/bin/v-add-user $sk_da_user $sk_password $sk_da_usermail $sk_vesta_package $sk_da_user $sk_da_user
+	/usr/local/hestia/bin/v-add-user $sk_da_user $sk_password $sk_da_usermail $sk_vesta_package $sk_da_user $sk_da_user
 	if [ $? != 0 ]; then
 		tput setaf 2
 		echo "Stop Working... Cant create user...if is fresh install of vestacp try reboot or reopen session check bug https://bugs.vestacp.com/issues/138"
@@ -130,13 +130,13 @@ do
 			mysql -e "CREATE DATABASE $db"
 			mysql ${db} < backup/${db}.sql
 			echo "Add $db to vestacp"
-			echo "DB='$db' DBUSER='$userdb' MD5='$md5' HOST='localhost' TYPE='mysql' CHARSET='UTF8' U_DISK='0' SUSPENDED='no' TIME='$TIME' DATE='$DATE'" >> /usr/local/vesta/data/users/${sk_da_user}/db.conf
+			echo "DB='$db' DBUSER='$userdb' MD5='$md5' HOST='localhost' TYPE='mysql' CHARSET='UTF8' U_DISK='0' SUSPENDED='no' TIME='$TIME' DATE='$DATE'" >> /usr/local/hestia/data/users/${sk_da_user}/db.conf
 	else
 			echo "Error: Cant restore database $db alredy exists in mysql server"
 	fi
 done
 echo "Fix passwords and users"
-/usr/local/vesta/bin/v-rebuild-databases $sk_da_user
+/usr/local/hestia/bin/v-rebuild-databases $sk_da_user
 }
 
 if [[ -z $sk_da_db_user_list ]]; then
@@ -162,7 +162,7 @@ for sk_da_dom in $sk_da_domain_list
 		tput setaf 2
 		echo "Add $sk_da_dom if not exists"
 		tput sgr0 
-		/usr/local/vesta/bin/v-add-domain ${sk_da_user} $sk_da_dom 
+		/usr/local/hestia/bin/v-add-domain ${sk_da_user} $sk_da_dom 
 		if [ "$?" = "4" ]; then
 			tput setaf 4
 			echo "Domain $sk_da_dom alredy added in some account, skip..."
@@ -222,7 +222,7 @@ cat sk_restored_domains | while read sk_da_mail_domain
 			tput sgr0
 				ls -1 ${b}/${sk_da_mail_domain}/email/data/imap/ | while read sk_da_imap
 					do
-						/usr/local/vesta/bin/v-add-mail-account $sk_da_user $sk_da_mail_domain $sk_da_imap temp
+						/usr/local/hestia/bin/v-add-mail-account $sk_da_user $sk_da_mail_domain $sk_da_imap temp
 						if [ "$sk_debug" != 0 ]; then
 							rsync -av ${b}/${sk_da_mail_domain}/email/data/imap/${sk_da_imap}/Maildir/ /home/${sk_da_user}/mail/${sk_da_mail_domain}/${sk_da_imap} 2>&1 | 
     						while read sk_file_dm
