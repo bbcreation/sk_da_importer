@@ -7,9 +7,9 @@
 # Contact da_importer@skamasle.com
 # Skamasle | Maks Usmanov
 # Twitter @skamasle
-# Turn this to 1 if you want get domains and paths from apache_owened_list 
+# Turn this to 1 if you want get domains and paths from apache_owened_list
 # Turn int to 2 if you want to get domains dir "domains" and set public_html as default
-sk_get_dom=1
+sk_get_dom=2
 if [ ! -e /usr/bin/rsync ] || [ ! -e /usr/bin/file ] ; then
 	echo "#######################################"
 	echo "rsync not installed, try install it"
@@ -30,7 +30,7 @@ d=domains
 #
 # Only for gen_password but I dont like it, a lot of lt
 # maybe will use it for orther functions :)
-source /usr/local/hestia/func/main.sh 
+source /usr/local/hestia/func/main.sh
 sk_file=$1
 sk_tmp=sk_tmp
 sk_delete_tmp () {
@@ -40,11 +40,11 @@ rm -rf /root/${sk_tmp}
 sk_file_name=$(ls $sk_file)
 tput setaf 2
 echo "Checking provided file..."
-tput sgr0 
+tput sgr0
 if file $sk_file |grep -q -c "gzip compressed data," ; then
 	tput setaf 2
 	echo "OK - Gziped File"
-	tput sgr0 	
+	tput sgr0
 	if [ ! -d /root/${sk_tmp} ]; then
 		echo "Creating tmp.."
 		mkdir /root/${sk_tmp}
@@ -62,7 +62,7 @@ if file $sk_file |grep -q -c "gzip compressed data," ; then
 		if [ $? -eq 0 ];then
 			tput setaf 2
 			echo "Backup extracted whitout errors..."
-			tput sgr0 
+			tput sgr0
 		else
 			echo "Error on backup extraction, check your file, try extract it manually"
 			sk_delete_tmp
@@ -83,72 +83,72 @@ if [ -z $sk_da_usermail ];then
 	sk_da_usermail=$(grep domain backup/user.conf |cut -d "=" -f 2 |head -n 1)
 fi
 
-if /usr/local/hestia/bin/v-list-users | grep -q -w $sk_da_user ;then
-	echo "User alredy exist on your server, maybe on vestacp or in your /etc/passwd"
-	echo "**"
-	echo "Grep your /etc/passwd"
-	grep -q -w $sk_da_user /etc/passwd
-	echo "**"
-	sk_delete_tmp
-	exit 21
-else
-	echo "Generate random password for $sk_da_user and create Vestacp Account ..."
-	sk_password=$(generate_password)
-	/usr/local/hestia/bin/v-add-user $sk_da_user $sk_password $sk_da_usermail $sk_vesta_package $sk_da_user $sk_da_user
-	if [ $? != 0 ]; then
-		tput setaf 2
-		echo "Stop Working... Cant create user...if is fresh install of vestacp try reboot or reopen session check bug https://bugs.vestacp.com/issues/138"
-		tput sgr0
-		sk_delete_tmp
-		exit 4
-		fi
-fi
+#if /usr/local/hestia/bin/v-list-users | grep -q -w $sk_da_user ;then
+#	echo "User alredy exist on your server, maybe on vestacp or in your /etc/passwd"
+#	echo "**"
+#	echo "Grep your /etc/passwd"
+#	grep -q -w $sk_da_user /etc/passwd
+#	echo "**"
+#	sk_delete_tmp
+#	exit 21
+#else
+#	echo "Generate random password for $sk_da_user and create Vestacp Account ..."
+#	sk_password=$(generate_password)
+#	/usr/local/hestia/bin/v-add-user $sk_da_user $sk_password $sk_da_usermail $sk_vesta_package $sk_da_user $sk_da_user
+#	if [ $? != 0 ]; then
+#		tput setaf 2
+#		echo "Stop Working... Cant create user...if is fresh install of vestacp try reboot or reopen session check bug https://bugs.vestacp.com/issues/138"
+#		tput sgr0
+#		sk_delete_tmp
+#		exit 4
+#		fi
+#fi
 for sk_ex1 in crontab ticket user
 do
 	mv backup/${sk_ex1}.conf backup/${sk_ex1}
 done
 # start whit databases
-tput setaf 2
-echo "Start Whit Databases"
-tput sgr0 
-echo "Get local databases"
-mysql -e "SHOW DATABASES" > server_dbs
-sk_da_db_user_list=$(ls -1 backup/ |grep ".conf")
-function sk_run_da_db () {
-for sk_da_db_u in $sk_da_db_user_list
-do
+#tput setaf 2
+#echo "Start Whit Databases"
+#tput sgr0
+#echo "Get local databases"
+#mysql -e "SHOW DATABASES" > server_dbs
+#sk_da_db_user_list=$(ls -1 backup/ |grep ".conf")
+#function sk_run_da_db () {
+#for sk_da_db_u in $sk_da_db_user_list
+#do
 	# Substring expresion -5: substring expression < 0
 	# userdb=$(echo $sk_da_db_u |sed "s/.conf//")
-	userdb=${sk_da_db_u:: -5}
-	md5=$(grep $userdb ${b}/${sk_da_db_u} | head -n 1 | tr '&' '\n ' |grep passwd |cut -d "=" -f 2)
-	db=$(grep db_collation ${b}/${sk_da_db_u} | tr '&' '\n ' |grep SCHEMA_NAME |cut -d "=" -f 2)
-	grep -w $db server_dbs
-	if [ $? == "1" ]; then
-			tput setaf 2
-			echo " Create and restore ${db} "
-			tput sgr0 
-			mysql -e "CREATE DATABASE $db"
-			mysql ${db} < backup/${db}.sql
-			echo "Add $db to vestacp"
-			echo "DB='$db' DBUSER='$userdb' MD5='$md5' HOST='localhost' TYPE='mysql' CHARSET='UTF8' U_DISK='0' SUSPENDED='no' TIME='$TIME' DATE='$DATE'" >> /usr/local/hestia/data/users/${sk_da_user}/db.conf
-	else
-			echo "Error: Cant restore database $db alredy exists in mysql server"
-	fi
-done
-echo "Fix passwords and users"
-/usr/local/hestia/bin/v-rebuild-databases $sk_da_user
-}
+#	userdb=${sk_da_db_u:: -5}
+#	md5=$(grep $userdb ${b}/${sk_da_db_u} | head -n 1 | tr '&' '\n ' |grep passwd |cut -d "=" -f 2)
+#	db=$(grep db_collation ${b}/${sk_da_db_u} | tr '&' '\n ' |grep SCHEMA_NAME |cut -d "=" -f 2)
+#	grep -w $db server_dbs
+#	if [ $? == "1" ]; then
+#			tput setaf 2
+#			echo " Create and restore ${db} "
+#			tput sgr0
+#			mysql -e "CREATE DATABASE $db"
+#			mysql ${db} < backup/${db}.sql
+#			echo "Add $db to vestacp"
+#			echo "DB='$db' DBUSER='$userdb' MD5='$md5' HOST='localhost' TYPE='mysql' CHARSET='UTF8' U_DISK='0' SUSPENDED='no' TIME='$TIME' DATE='$DATE'" >> /usr/local/hestia/data/users/${sk_da_user}/db.conf
+#	else
+#			echo "Error: Cant restore database $db alredy exists in mysql server"
+#	fi
+#done
+#echo "Fix passwords and users"
+#/usr/local/hestia/bin/v-rebuild-databases $sk_da_user
+#}
 
-if [[ -z $sk_da_db_user_list ]]; then
-	echo "No database found"
-else
-sk_run_da_db
-fi
+#if [[ -z $sk_da_db_user_list ]]; then
+#	echo "No database found"
+#else
+#sk_run_da_db
+#fi
 
 # Start whit domains
 tput setaf 2
 echo "Start Whit Domains"
-tput sgr0 
+tput sgr0
 if [ "$sk_get_dom" = 1 ];then
 	sk_da_domain_list=$(grep "=G" ${b}/apache_owned_files.list |grep -v public_html |grep -v private_html)
 else
@@ -158,15 +158,15 @@ for sk_da_dom in $sk_da_domain_list
 	do
 		if [ "$sk_get_dom" = 1 ];then
 			sk_da_dom=${sk_da_dom:: -2}
-		fi			
+		fi
 		tput setaf 2
 		echo "Add $sk_da_dom if not exists"
-		tput sgr0 
-		/usr/local/hestia/bin/v-add-domain ${sk_da_user} $sk_da_dom 
+		tput sgr0
+		/usr/local/hestia/bin/v-add-domain ${sk_da_user} $sk_da_dom
 		if [ "$?" = "4" ]; then
 			tput setaf 4
 			echo "Domain $sk_da_dom alredy added in some account, skip..."
-			tput sgr0 
+			tput sgr0
 		elif [ -d /home/${sk_da_user}/web/${sk_da_dom} ];then
 			echo "Domain $sk_da_dom added, restoring files"
 			echo $sk_da_dom >> sk_restored_domains
@@ -179,7 +179,7 @@ for sk_da_dom in $sk_da_domain_list
 			fi
 			if [ "$sk_debug" != 0 ]; then
 				rm -f /home/${sk_da_user}/web/${sk_da_dom}/public_html/index.html
-				rsync -av ${d}/${sk_da_do_path}/ /home/${sk_da_user}/web/${sk_da_dom}/public_html 2>&1 | 
+				rsync -av ${d}/${sk_da_do_path}/ /home/${sk_da_user}/web/${sk_da_dom}/public_html 2>&1 |
     			while read sk_file_dm; do
        			 	sk_sync=$((sk_sync+1))
        			 	echo -en "-- $sk_sync restored files\r"
@@ -199,7 +199,7 @@ echo " "
 echo "Domains restored!"
 tput setaf 2
 	echo "Start restoring mails"
-tput sgr0 
+tput sgr0
 function sk_da_restore_imap_pass () {
 if [ -d /etc/exim ]; then
 	EXIM=/etc/exim
@@ -215,16 +215,16 @@ echo "Password for $1@$2 restored"
 }
 if [ -e sk_restored_domains ]; then
 cat sk_restored_domains | while read sk_da_mail_domain
-	do	
-		if [ "$(ls -A ${b}/${sk_da_mail_domain}/email/data/imap/)" ]; then
+	do
+		if [ "$(ls -A imap/${sk_da_mail_domain}/)" ]; then
 			tput setaf 2
 			echo "Found Imap for ${sk_da_mail_domain}"
 			tput sgr0
-				ls -1 ${b}/${sk_da_mail_domain}/email/data/imap/ | while read sk_da_imap
+				ls -1 imap/${sk_da_mail_domain}/ | while read sk_da_imap
 					do
 						/usr/local/hestia/bin/v-add-mail-account $sk_da_user $sk_da_mail_domain $sk_da_imap temp
 						if [ "$sk_debug" != 0 ]; then
-							rsync -av ${b}/${sk_da_mail_domain}/email/data/imap/${sk_da_imap}/Maildir/ /home/${sk_da_user}/mail/${sk_da_mail_domain}/${sk_da_imap} 2>&1 | 
+							rsync -av imap/${sk_da_mail_domain}/${sk_da_imap}/Maildir/ /home/${sk_da_user}/mail/${sk_da_mail_domain}/${sk_da_imap} 2>&1 |
     						while read sk_file_dm
 							do
        			 				sk_sync=$((sk_sync+1))
@@ -232,6 +232,7 @@ cat sk_restored_domains | while read sk_da_mail_domain
 							done
 							echo " "
 						else
+echo "STOP"
 							rsync ${b}/${sk_da_mail_domain}/email/data/imap/${sk_da_imap}/Maildir/ /home/${sk_da_user}/mail/${sk_da_mail_domain}/${sk_da_imap}
 						fi
 						chown ${sk_da_user}:mail -R /home/${sk_da_user}/mail/${sk_da_mail_domain}/${sk_da_imap}
